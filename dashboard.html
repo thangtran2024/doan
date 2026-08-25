@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
+  <link rel="stylesheet" href="assets/css/base.css?v=4" />
+  <link rel="stylesheet" href="assets/css/components.css?v=4" />
+  <link rel="stylesheet" href="assets/css/internal.css?v=4" />
+  <style>
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+    .kpi__delta.up { color: var(--success); }
+
+    .cols { display: grid; grid-template-columns: 1fr; gap: 20px; }
+    @media (min-width: 1100px) { .cols { grid-template-columns: 1.6fr 1fr; } }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+    .card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .card__head h3 { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .card__head .sub { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .card__link { font-size: 13px; font-weight: 600; color: var(--muted-fg); }
+    .card__link:hover { color: var(--fg); }
+    .card__body { padding: 8px 20px 16px; }
+    .stack { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Leaderboard */
+    .lb-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .lb-row:last-child { border-bottom: 0; }
+    .lb-rank { width: 24px; height: 24px; border-radius: 50%; background: var(--muted); color: var(--muted-fg); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .lb-row:nth-child(1) .lb-rank { background: var(--gold); color: var(--gold-fg); }
+    .lb-name { font-size: 14px; font-weight: 600; color: var(--fg); }
+    .lb-role { font-size: 12px; color: var(--muted-fg); }
+    .lb-rev { margin-left: auto; font-size: 14px; font-weight: 700; color: var(--fg); }
+
+    /* Bar chart */
+    .chart { display: flex; align-items: flex-end; gap: 12px; height: 180px; padding-top: 10px; }
+    .chart__col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .chart__bar { width: 100%; max-width: 44px; background: var(--primary); border-radius: 6px 6px 0 0; position: relative; }
+    .chart__col:last-child .chart__bar { background: var(--gold); }
+    .chart__v { font-size: 11px; font-weight: 700; color: var(--muted-fg); }
+    .chart__m { font-size: 12px; color: var(--muted-fg); }
+
+    /* Alerts & activity */
+    .row-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .row-item:last-child { border-bottom: 0; }
+    .row-item__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--muted); color: var(--muted-fg); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .row-item__t { font-size: 13px; font-weight: 600; color: var(--fg); }
+    .row-item__s { font-size: 12px; color: var(--muted-fg); }
+    .row-item__chev { margin-left: auto; color: var(--muted-fg); }
+    .act-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; }
+    .act-row .avatar { width: 32px; height: 32px; font-size: 12px; }
+    .act-row__t { font-size: 13px; color: var(--fg); }
+    .act-row__time { font-size: 11px; color: var(--muted-fg); margin-top: 2px; }
+    .pill-cnt { background: var(--danger-soft); color: var(--danger); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+    .tag-up { background: var(--success-soft); color: var(--success); font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 9px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="dashboard"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Chào buổi sáng, Minh 👋</div>
+            <div class="app-topbar__sub">Bạn có 3 việc cần xử lý hôm nay</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="app-topbar__search" id="topSearch"></span>
+          <button class="icon-btn" id="btnBell" aria-label="Thông báo"><span class="icon-btn__dot"></span></button>
+          <a class="btn btn--primary btn--sm" id="btnAdd" href="themphong.html"></a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <!-- 2 cột -->
+        <div class="cols">
+          <div class="stack">
+            <!-- Bảng xếp hạng -->
+            <section class="card">
+              <div class="card__head"><div><h3>Bảng xếp hạng tháng 7</h3></div><a class="card__link" href="doanhthu.html">Xem tất cả</a></div>
+              <div class="card__body" id="leaderboard"></div>
+            </section>
+            <!-- Biểu đồ doanh thu -->
+            <section class="card">
+              <div class="card__head"><div><h3>Doanh thu hoa hồng</h3><div class="sub">6 tháng gần nhất (triệu đồng)</div></div><span class="tag-up">↑ 18%</span></div>
+              <div class="card__body"><div class="chart" id="chart"></div></div>
+            </section>
+          </div>
+
+          <div class="stack">
+            <!-- Cần xử lý -->
+            <section class="card">
+              <div class="card__head"><div><h3>Cần xử lý</h3></div><span class="pill-cnt">5 mới</span></div>
+              <div class="card__body" id="alerts"></div>
+            </section>
+            <!-- Nhật ký -->
+            <section class="card">
+              <div class="card__head"><div><h3>Nhật ký hoạt động</h3></div></div>
+              <div class="card__body" id="activity"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+    document.getElementById('btnBell').insertAdjacentHTML('afterbegin', I('bell', 20));
+    document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm phòng';
+    document.getElementById('topSearch').innerHTML = I('search', 16) + '<span>Tìm phòng, tòa nhà, khách...</span>';
+
+    // KPI
+    var kpis = [
+      { label: 'Doanh thu tháng này', ic: 'wallet', val: '32,4 tr', delta: '+18% vs tháng trước', up: true },
+      { label: 'Deal chốt (tháng)', ic: 'file-text', val: '12', delta: '3 deal đang chờ cọc' },
+      { label: 'Phòng còn trống', ic: 'package', val: '247', delta: 'trên 1.024 phòng' },
+      { label: 'Khách đang chăm', ic: 'users', val: '28', delta: '2 khách sắp hết khóa' }
+    ];
+    document.getElementById('kpiRow').innerHTML = kpis.map(function (k) {
+      return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+        '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta' + (k.up ? ' up' : '') + '">' + k.delta + '</div></div>';
+    }).join('');
+
+    // Leaderboard
+    var lb = [
+      { av: 'TH', nm: 'Thu Hà', role: 'Sale cấp 1 · 18 deal', rev: '48,2 tr' },
+      { av: 'MT', nm: 'Minh Trọ', role: 'Sale cấp 2 · 12 deal', rev: '32,4 tr' },
+      { av: 'QB', nm: 'Quốc Bảo', role: 'Sale cấp 2 · 10 deal', rev: '27,1 tr' },
+      { av: 'LA', nm: 'Lan Anh', role: 'Sale cấp 2 · 7 deal', rev: '19,5 tr' },
+      { av: 'ĐH', nm: 'Đức Huy', role: 'Sale cấp 2 · 5 deal', rev: '13,2 tr' }
+    ];
+    document.getElementById('leaderboard').innerHTML = lb.map(function (r, i) {
+      return '<div class="lb-row"><span class="lb-rank">' + (i + 1) + '</span><span class="avatar" style="width:36px;height:36px;font-size:13px">' + r.av + '</span>' +
+        '<span><span class="lb-name" style="display:block">' + r.nm + '</span><span class="lb-role">' + r.role + '</span></span>' +
+        '<span class="lb-rev">' + r.rev + '</span></div>';
+    }).join('');
+
+    // Chart
+    var bars = [['T2', 18], ['T3', 22], ['T4', 16], ['T5', 25], ['T6', 27], ['T7', 32]];
+    var max = 32;
+    document.getElementById('chart').innerHTML = bars.map(function (b) {
+      return '<div class="chart__col"><span class="chart__v">' + b[1] + '</span>' +
+        '<div class="chart__bar" style="height:' + Math.round(b[1] / max * 100) + '%"></div>' +
+        '<span class="chart__m">' + b[0] + '</span></div>';
+    }).join('');
+
+    // Alerts
+    var alerts = [
+      { t: '2 khách sắp hết khóa 30 ngày', s: 'Còn 2 ngày · nhấn để chăm lại' },
+      { t: 'HĐ P.302 Nguyễn Oanh sắp hết hạn', s: 'Còn 28 ngày · tư vấn tái chốt' },
+      { t: "3 phòng 'Sắp trống' tới ngày dự kiến", s: 'Cập nhật trạng thái ngay' },
+      { t: '1 yêu cầu SĐT chủ nhà chờ duyệt', s: 'Từ Quốc Bảo · P.12 Lê Đức Thọ' },
+      { t: 'Deal #1042 chưa upload hợp đồng', s: 'Đã cọc 4 ngày trước' }
+    ];
+    document.getElementById('alerts').innerHTML = alerts.map(function (a) {
+      return '<div class="row-item"><span class="row-item__ic">' + I('bell', 16) + '</span>' +
+        '<span style="flex:1"><span class="row-item__t" style="display:block">' + a.t + '</span><span class="row-item__s">' + a.s + '</span></span>' +
+        '<span class="row-item__chev" style="font-size:18px">›</span></div>';
+    }).join('');
+
+    // Activity
+    var acts = [
+      { av: 'TH', t: 'Thu Hà chốt deal 12tr tại HT Nguyễn Oanh', time: '5 phút trước' },
+      { av: 'AD', t: 'Admin thêm 5 phòng mới tại HT Lê Đức Thọ', time: '1 giờ trước' },
+      { av: 'QB', t: "Quốc Bảo đưa khách sang bước 'Đã dẫn xem'", time: '2 giờ trước' },
+      { av: 'MT', t: 'Bạn vừa đủ điều kiện thăng cấp Sale 1 🎉', time: 'Hôm qua' },
+      { av: 'LA', t: 'Lan Anh có khách mới từ Facebook Ads', time: 'Hôm qua' }
+    ];
+    document.getElementById('activity').innerHTML = acts.map(function (a) {
+      return '<div class="act-row"><span class="avatar">' + a.av + '</span>' +
+        '<span style="flex:1"><span class="act-row__t" style="display:block">' + a.t + '</span><span class="act-row__time">' + a.time + '</span></span></div>';
+    }).join('');
+
+    // Ô tìm kiếm topbar → mở tìm kiếm toàn cục
+    var ts = document.getElementById('topSearch');
+    if (ts) { ts.style.cursor = 'pointer'; ts.addEventListener('click', function () { if (window.HTI && HTI.globalSearch) HTI.globalSearch(); }); }
+    // Chuông thông báo → modal "Cần xử lý"
+    var bb = document.getElementById('btnBell');
+    if (bb) bb.addEventListener('click', function () {
+      var html = alerts.map(function (a) {
+        return '<div class="row-item"><span class="row-item__ic">' + I('bell', 16) + '</span><span style="flex:1"><span class="row-item__t" style="display:block">' + HT.esc(a.t) + '</span><span class="row-item__s">' + HT.esc(a.s) + '</span></span></div>';
+      }).join('');
+      HT.modal({ title: 'Thông báo · Cần xử lý', sub: alerts.length + ' việc cần xử lý hôm nay', submitLabel: null, bodyHTML: html });
+    });
+  </script>
+</body>
+</html>

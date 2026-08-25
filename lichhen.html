@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch hẹn dẫn xem — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
+  <link rel="stylesheet" href="assets/css/base.css?v=4" />
+  <link rel="stylesheet" href="assets/css/components.css?v=4" />
+  <link rel="stylesheet" href="assets/css/internal.css?v=4" />
+  <style>
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); }
+
+    /* ---------- Thanh điều khiển lịch ---------- */
+    .cal-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--border); }
+    .cal-bar__title { font-size: 15px; font-weight: 700; color: var(--fg); }
+    .cal-bar__spacer { flex: 1; }
+    .btn-today { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 1px solid var(--border); background: var(--card); color: var(--fg); border-radius: var(--radius-s); font-size: 13px; font-weight: 600; }
+    .btn-today:hover { background: var(--muted); }
+    .seg { display: inline-flex; background: var(--muted); border-radius: var(--radius-s); padding: 3px; gap: 2px; }
+    .seg__btn { padding: 6px 14px; border: 0; background: transparent; color: var(--muted-fg); font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; }
+    .seg__btn.is-active { background: var(--card); color: var(--fg); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+    /* Chú thích trạng thái */
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted-fg); }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+    .lg-ok { background: var(--success-soft); border: 1px solid var(--success); }
+    .lg-wait { background: var(--warning-soft); border: 1px solid var(--warning); }
+    .lg-cancel { background: var(--muted); border: 1px solid var(--border); }
+
+    /* ---------- Lưới lịch tuần (desktop) ---------- */
+    .cal-scroll { overflow-x: auto; }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: 60px repeat(7, minmax(120px, 1fr));
+      min-width: 900px;
+    }
+    .cal-grid__head {
+      position: sticky; top: 0; background: var(--card); z-index: 2;
+      padding: 10px 8px; text-align: center; border-bottom: 1px solid var(--border);
+      font-size: 12px; color: var(--muted-fg); font-weight: 600;
+    }
+    .cal-grid__head.is-today { color: var(--fg); }
+    .cal-grid__head--corner { border-right: 1px solid var(--border); }
+    .cal-grid__head b { display: block; font-size: 16px; font-weight: 800; color: var(--fg); margin-top: 2px; }
+    .cal-grid__time {
+      padding: 6px 8px; text-align: right; font-size: 11px; color: var(--muted-fg);
+      border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .cal-grid__cell {
+      min-height: 52px; padding: 4px; border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .cal-grid__cell:nth-child(8n+1) { border-left: 0; }
+    .cal-col-today { background: rgba(244,183,64,.05); }
+
+    /* Thẻ lịch hẹn */
+    .appt { display: block; border-radius: 8px; padding: 6px 8px; font-size: 12px; line-height: 1.35; border-left: 3px solid; }
+    .appt__time { font-weight: 700; }
+    .appt__name { font-weight: 600; display: block; }
+    .appt__room { color: inherit; opacity: .8; display: block; font-size: 11px; }
+    .appt--ok { background: var(--success-soft); color: #135f34; border-left-color: var(--success); }
+    .appt--wait { background: var(--warning-soft); color: #8a5807; border-left-color: var(--warning); }
+    .appt--cancel { background: var(--muted); color: var(--muted-fg); border-left-color: var(--border); }
+    .appt--cancel .appt__name, .appt--cancel .appt__time { text-decoration: line-through; }
+
+    /* ---------- Agenda (mobile) ---------- */
+    .agenda { display: none; padding: 8px 14px 16px; flex-direction: column; gap: 18px; }
+    .agenda__day-h { display: flex; align-items: baseline; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .agenda__day-h b { font-size: 14px; font-weight: 700; color: var(--fg); }
+    .agenda__day-h span { font-size: 12px; color: var(--muted-fg); }
+    .agenda__day-h .is-today-tag { margin-left: auto; background: var(--gold-soft); color: var(--gold-fg); font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+    .agenda__row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .agenda__row:last-child { border-bottom: 0; }
+    .agenda__time { font-size: 13px; font-weight: 700; color: var(--fg); width: 48px; flex-shrink: 0; }
+    .agenda__info { flex: 1; min-width: 0; }
+    .agenda__name { font-size: 14px; font-weight: 600; color: var(--fg); display: block; }
+    .agenda__room { font-size: 12px; color: var(--muted-fg); display: block; }
+    .agenda__row--cancel .agenda__name, .agenda__row--cancel .agenda__time { text-decoration: line-through; color: var(--muted-fg); }
+    .badge-st { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; flex-shrink: 0; }
+    .badge-st--ok { background: var(--success-soft); color: var(--success); }
+    .badge-st--wait { background: var(--warning-soft); color: var(--warning); }
+    .badge-st--cancel { background: var(--muted); color: var(--muted-fg); }
+
+    /* Chuyển đổi calendar <-> agenda theo bề rộng */
+    @media (max-width: 1023px) {
+      .cal-scroll { display: none; }
+      .agenda { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="lichhen"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Lịch hẹn dẫn xem</div>
+            <div class="app-topbar__sub">Tuần này: 7 lịch · 3 đang chờ xác nhận · 1 đã huỷ</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="app-topbar__search" id="topSearch"></span>
+          <a class="btn btn--primary btn--sm" id="btnAdd" href="#"></a>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <section class="card">
+          <!-- Thanh điều khiển -->
+          <div class="cal-bar">
+            <div class="cal-bar__title">Tuần 28 · 13/07 - 19/07</div>
+            <div class="cal-bar__spacer"></div>
+            <button class="btn-today" id="btnToday"></button>
+            <div class="seg">
+              <button class="seg__btn">Ngày</button>
+              <button class="seg__btn is-active">Tuần</button>
+              <button class="seg__btn">Tháng</button>
+            </div>
+          </div>
+
+          <!-- Chú thích -->
+          <div class="legend">
+            <span><i class="lg-ok"></i> Đã xác nhận</span>
+            <span><i class="lg-wait"></i> Chờ xác nhận</span>
+            <span><i class="lg-cancel"></i> Đã huỷ</span>
+          </div>
+
+          <!-- Lưới lịch tuần (desktop) -->
+          <div class="cal-scroll">
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+
+          <!-- Agenda theo ngày (mobile) -->
+          <div class="agenda" id="agenda"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+    document.getElementById('btnToday').innerHTML = I('calendar-days', 15) + 'Hôm nay';
+    document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Đặt lịch hẹn';
+    document.getElementById('topSearch').innerHTML = I('search', 16) + '<span>Tìm khách, phòng...</span>';
+
+    // Cấu hình tuần
+    var HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+    var DAYS = [
+      { lb: 'T2', d: '13' }, { lb: 'T3', d: '14' }, { lb: 'T4', d: '15' },
+      { lb: 'T5', d: '16' }, { lb: 'T6', d: '17' }, { lb: 'T7', d: '18' }, { lb: 'CN', d: '19' }
+    ];
+    var TODAY = 2; // T4 15/07 (demo)
+
+    // Dữ liệu lịch hẹn: day = chỉ số 0..6 (T2..CN), h = giờ bắt đầu — nạp thật từ D1
+    var APPTS = [];
+
+    var ST_LABEL = { ok: 'Đã xác nhận', wait: 'Chờ xác nhận', cancel: 'Đã huỷ' };
+    function hh(h) { return (h < 10 ? '0' + h : h) + ':00'; }
+    function apptAt(day, h) {
+      for (var i = 0; i < APPTS.length; i++) {
+        if (APPTS[i].day === day && APPTS[i].h === h) return APPTS[i];
+      }
+      return null;
+    }
+
+    var E = HT.esc;
+
+    // ---------- Nối D1: trạng thái + map ngày/giờ vào lưới tuần ----------
+    var ST_FROM_DB = { xacnhan: 'ok', cho: 'wait', huy: 'cancel' };
+    var ST_TO_DB = { ok: 'xacnhan', wait: 'cho', cancel: 'huy' };
+    function dayIndexOf(dateStr) {
+      if (!dateStr) return TODAY;
+      var dnum = parseInt(String(dateStr).split('-')[2], 10);
+      for (var i = 0; i < DAYS.length; i++) { if (parseInt(DAYS[i].d, 10) === dnum) return i; }
+      return TODAY;
+    }
+    function rowToAppt(r) {
+      return {
+        dbid: r.id, day: dayIndexOf(r.ngay), h: parseInt(r.gio, 10) || 9,
+        name: r.khach, room: r.phong || '', phone: r.sdt || '',
+        st: ST_FROM_DB[r.trang_thai] || 'wait', ngay: r.ngay
+      };
+    }
+    function loadAppts() {
+      return fetch('/api/lich-hen').then(function (r) { return r.json(); }).then(function (rows) {
+        if (!Array.isArray(rows)) rows = [];
+        APPTS = rows.map(rowToAppt);
+        renderAll();
+      }).catch(function () { HT.toast('Không tải được lịch hẹn', 'danger'); });
+    }
+
+    // ---------- Lưới tuần (desktop) ----------
+    function renderGrid() {
+      var html = '<div class="cal-grid__head cal-grid__head--corner"></div>';
+      DAYS.forEach(function (d, i) {
+        html += '<div class="cal-grid__head' + (i === TODAY ? ' is-today' : '') + '">' +
+          d.lb + '<b>' + d.d + '</b></div>';
+      });
+      HOURS.forEach(function (h) {
+        html += '<div class="cal-grid__time">' + hh(h) + '</div>';
+        DAYS.forEach(function (d, i) {
+          var a = apptAt(i, h);
+          var cellCls = 'cal-grid__cell' + (i === TODAY ? ' cal-col-today' : '');
+          html += '<div class="' + cellCls + '">';
+          if (a) {
+            html += '<span class="appt appt--' + a.st + '" data-idx="' + APPTS.indexOf(a) + '" style="cursor:pointer">' +
+              '<span class="appt__time">' + hh(a.h) + '</span> ' +
+              '<span class="appt__name">' + E(a.name) + '</span>' +
+              '<span class="appt__room">' + E(a.room) + '</span></span>';
+          }
+          html += '</div>';
+        });
+      });
+      document.getElementById('calGrid').innerHTML = html;
+    }
+
+    // ---------- Agenda (mobile) ----------
+    function renderAgenda() {
+      var ag = '';
+      DAYS.forEach(function (d, i) {
+        var list = APPTS.filter(function (a) { return a.day === i; })
+          .sort(function (a, b) { return a.h - b.h; });
+        if (!list.length) return;
+        ag += '<div>';
+        ag += '<div class="agenda__day-h"><b>' + d.lb + ' ' + d.d + '/07</b>' +
+          '<span>' + list.length + ' lịch hẹn</span>' +
+          (i === TODAY ? '<span class="is-today-tag">Hôm nay</span>' : '') + '</div>';
+        list.forEach(function (a) {
+          ag += '<div class="agenda__row' + (a.st === 'cancel' ? ' agenda__row--cancel' : '') + '" data-idx="' + APPTS.indexOf(a) + '" style="cursor:pointer">' +
+            '<span class="agenda__time">' + hh(a.h) + '</span>' +
+            '<span class="agenda__info"><span class="agenda__name">' + E(a.name) + '</span>' +
+            '<span class="agenda__room">' + E(a.room) + '</span></span>' +
+            '<span class="badge-st badge-st--' + a.st + '">' + ST_LABEL[a.st] + '</span></div>';
+        });
+        ag += '</div>';
+      });
+      document.getElementById('agenda').innerHTML = ag;
+    }
+
+    function renderAll() { renderGrid(); renderAgenda(); }
+    renderAll();
+    loadAppts();
+
+    // Lưu trạng thái xuống D1
+    function patchStatus(a, st) {
+      if (!a || !a.dbid) return;
+      fetch('/api/lich-hen', {
+        method: 'PATCH', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ id: a.dbid, trang_thai: ST_TO_DB[st] || 'cho' })
+      }).catch(function () { HT.toast('Lỗi lưu trạng thái, thử lại', 'danger'); });
+    }
+
+    // ---------- Modal chi tiết lịch hẹn ----------
+    function openDetail(idx) {
+      var a = APPTS[idx];
+      if (!a) return;
+      var body =
+        '<div class="mfield"><label class="mfield__label">Khách</label><div>' + E(a.name) + '</div></div>' +
+        '<div class="mrow">' +
+          '<div class="mfield"><label class="mfield__label">Phòng</label><div>' + E(a.room) + '</div></div>' +
+          '<div class="mfield"><label class="mfield__label">Giờ</label><div>' + hh(a.h) + '</div></div>' +
+        '</div>' +
+        '<div class="mfield"><label class="mfield__label">Trạng thái</label>' +
+          '<div><span class="badge-st badge-st--' + a.st + '">' + ST_LABEL[a.st] + '</span></div></div>' +
+        '<div class="mrow" style="margin-top:8px">' +
+          '<button class="btn btn--primary" data-ok>Xác nhận</button>' +
+          '<button class="btn btn--ghost" data-cancel style="color:var(--danger)">Huỷ lịch</button>' +
+          '<button class="btn btn--ghost" data-del style="color:var(--danger)">Xoá lịch</button>' +
+        '</div>';
+      var m = HT.modal({ title: 'Chi tiết lịch hẹn', sub: a.name + ' · ' + a.room, submitLabel: null, bodyHTML: body });
+      m.el.querySelector('[data-ok]').addEventListener('click', function () {
+        a.st = 'ok'; renderAll(); m.close(); HT.toast('Đã xác nhận lịch hẹn', 'success');
+        patchStatus(a, 'ok');
+      });
+      m.el.querySelector('[data-cancel]').addEventListener('click', function () {
+        a.st = 'cancel'; renderAll(); m.close(); HT.toast('Đã huỷ lịch hẹn', 'warning');
+        patchStatus(a, 'cancel');
+      });
+      m.el.querySelector('[data-del]').addEventListener('click', function () {
+        HT.confirm({
+          title: 'Xoá lịch hẹn', message: 'Xoá lịch của ' + a.name + '?', danger: true, confirmLabel: 'Xoá',
+          onConfirm: function () {
+            fetch('/api/lich-hen', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: a.dbid }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) {
+                if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+                m.close(); HT.toast('Đã xoá lịch', 'success'); loadAppts();
+              })
+              .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          }
+        });
+      });
+    }
+    document.getElementById('calGrid').addEventListener('click', function (e) {
+      var s = e.target.closest('.appt'); if (s) openDetail(parseInt(s.getAttribute('data-idx'), 10));
+    });
+    document.getElementById('agenda').addEventListener('click', function (e) {
+      var s = e.target.closest('.agenda__row'); if (s) openDetail(parseInt(s.getAttribute('data-idx'), 10));
+    });
+
+    // ---------- Đặt lịch hẹn ----------
+    document.getElementById('btnAdd').addEventListener('click', function (e) {
+      e.preventDefault();
+      var hourOpts = HOURS.map(function (h) { return '<option value="' + h + '">' + hh(h) + '</option>'; }).join('');
+      var body =
+        '<div class="mrow">' +
+          '<div class="mfield"><label class="mfield__label">Khách</label><input id="aName" type="text" placeholder="Tên khách"/></div>' +
+          '<div class="mfield"><label class="mfield__label">SĐT</label><input id="aPhone" type="tel" placeholder="09xx xxx xxx"/></div>' +
+        '</div>' +
+        '<div class="mfield"><label class="mfield__label">Phòng</label><input id="aRoom" type="text" placeholder="VD: P.303 Nguyễn Huệ"/></div>' +
+        '<div class="mrow">' +
+          '<div class="mfield"><label class="mfield__label">Ngày</label><input id="aDate" type="date"/></div>' +
+          '<div class="mfield"><label class="mfield__label">Khung giờ</label><select id="aHour">' + hourOpts + '</select></div>' +
+        '</div>';
+      HT.modal({
+        title: 'Đặt lịch hẹn', sub: 'Lịch dẫn xem phòng cho khách',
+        submitLabel: 'Đặt lịch', bodyHTML: body,
+        onSubmit: function (m, close) {
+          var name = m.querySelector('#aName').value.trim();
+          var phone = m.querySelector('#aPhone').value.trim();
+          var room = m.querySelector('#aRoom').value.trim();
+          var date = m.querySelector('#aDate').value;
+          var h = parseInt(m.querySelector('#aHour').value, 10);
+          if (!name) { HT.toast('Nhập tên khách', 'danger'); return false; }
+          if (!phone) { HT.toast('Nhập số điện thoại', 'danger'); return false; }
+          if (!room) { HT.toast('Nhập phòng', 'danger'); return false; }
+          if (!date) { HT.toast('Chọn ngày', 'danger'); return false; }
+          // Chống trùng khung giờ trong lưới tuần demo
+          if (apptAt(dayIndexOf(date), h)) { HT.toast('Khung giờ này đã có lịch', 'danger'); return false; }
+          fetch('/api/lich-hen', {
+            method: 'POST', headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ khach: name, sdt: phone, phong: room, ngay: date, gio: String(h), trang_thai: 'cho' })
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res && res.error) { HT.toast(res.error, 'danger'); return; }
+            close();
+            HT.toast('Đã đặt lịch hẹn', 'success');
+            loadAppts();
+          }).catch(function () { HT.toast('Lỗi mạng, chưa lưu được', 'danger'); });
+          return false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

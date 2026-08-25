@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết phòng — HT HOME</title>
+  <meta name="description" content="Thông tin chi tiết phòng cho thuê tại TP.HCM — hình thật, giá minh bạch, video review và sale hỗ trợ tận nơi." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
+  <link rel="stylesheet" href="assets/css/base.css?v=4" />
+  <link rel="stylesheet" href="assets/css/components.css?v=4" />
+  <style>
+    /* ===== Trang chi tiết phòng — style riêng ===== */
+
+    /* Thanh breadcrumb + chia sẻ */
+    .topbar { background: var(--card); border-bottom: 1px solid var(--border); }
+    .topbar__inner { display: flex; flex-direction: column; gap: 10px; padding-block: 12px; }
+    @media (min-width: 768px) { .topbar__inner { flex-direction: row; align-items: center; justify-content: space-between; } }
+    .crumb { font-size: 13px; color: var(--muted-fg); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .crumb a:hover { color: var(--fg); }
+    .crumb b { color: var(--fg); font-weight: 600; }
+    .share { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted-fg); }
+    .share__btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-pill);
+      font-size: 13px; font-weight: 600; color: var(--fg); background: var(--card);
+    }
+    .share__btn:hover { border-color: var(--muted-fg); }
+    .share__btn .ic, .share__btn svg { width: 15px; height: 15px; }
+
+    /* Bố cục 2 cột */
+    .detail { padding-block: 24px 48px; }
+    .detail__grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 1024px) { .detail__grid { grid-template-columns: minmax(0,1fr) 340px; gap: 32px; align-items: start; } }
+
+    /* Panel chung */
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 20px; box-shadow: var(--shadow-card); }
+    .panel + .panel { margin-top: 20px; }
+    .panel__title { font-size: 17px; font-weight: 700; color: var(--fg); margin-bottom: 14px; }
+
+    /* Gallery */
+    .gallery__main {
+      position: relative; border-radius: var(--radius-l); overflow: hidden;
+      aspect-ratio: 16 / 10; background: var(--muted);
+    }
+    .gallery__grad { position: absolute; inset: 0; }
+    .gallery__count {
+      position: absolute; bottom: 12px; right: 12px; z-index: 1;
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 5px 10px; border-radius: var(--radius-s);
+      background: rgba(20,26,36,.78); color: #fff; font-size: 12px; font-weight: 600;
+    }
+    .gallery__thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+    .gallery__thumb { position: relative; aspect-ratio: 4 / 3; border-radius: var(--radius-s); overflow: hidden; cursor: pointer; background: var(--muted); }
+    .gallery__thumb .grad { position: absolute; inset: 0; }
+    .gallery__thumb.is-active { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+    /* Video TikTok */
+    .videobox { margin-top: 16px; }
+    .videobox__frame { border-radius: var(--radius-m); overflow: hidden; background: #000; aspect-ratio: 9 / 16; max-width: 320px; }
+    .videobox__frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .video-note { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; font-size: 13px; color: var(--muted-fg); }
+    .video-note .ic { color: var(--danger); }
+
+    /* Title card */
+    .titlecard__price { font-size: 28px; font-weight: 800; color: var(--fg); line-height: 1.15; }
+    .titlecard__price span { font-size: 15px; font-weight: 500; color: var(--muted-fg); }
+    .titlecard__name { font-size: 20px; font-weight: 700; color: var(--fg); margin-top: 8px; line-height: 1.3; }
+    .titlecard__addr { display: flex; align-items: flex-start; gap: 6px; color: var(--muted-fg); font-size: 14px; margin-top: 10px; }
+    .titlecard__addr .ic { color: var(--gold); margin-top: 2px; }
+    .titlecard__actions { display: flex; gap: 10px; margin-top: 16px; }
+
+    /* Specs */
+    .specs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 560px) { .specs { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1024px) { .specs { grid-template-columns: repeat(5, 1fr); } }
+    .spec { background: var(--muted); border-radius: var(--radius-m); padding: 14px 12px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+    .spec__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .spec__lbl { font-size: 12px; color: var(--muted-fg); }
+    .spec__val { font-size: 14px; font-weight: 700; color: var(--fg); }
+
+    /* Amenities */
+    .amenities { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) { .amenities { grid-template-columns: repeat(3, 1fr); } }
+    .amenity { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--fg); }
+    .amenity .chk { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--success-soft); color: var(--success); display: inline-flex; align-items: center; justify-content: center; }
+    .amenity .chk svg { width: 13px; height: 13px; }
+
+    /* Intro */
+    .intro p { font-size: 14.5px; color: var(--fg); line-height: 1.65; }
+    .intro p + p { margin-top: 10px; }
+
+    /* Cost */
+    .cost { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    @media (min-width: 640px) { .cost { grid-template-columns: repeat(4, 1fr); } }
+    .cost__item { border: 1px solid var(--border); border-radius: var(--radius-m); padding: 14px; }
+    .cost__lbl { font-size: 12px; color: var(--muted-fg); }
+    .cost__val { font-size: 15px; font-weight: 700; color: var(--fg); margin-top: 4px; }
+
+    /* Map */
+    .mapbox { height: 300px; border-radius: var(--radius-m); overflow: hidden; background: var(--muted); display: flex; align-items: center; justify-content: center; color: var(--muted-fg); font-size: 14px; text-align: center; padding: 16px; }
+    .mapbox iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .map-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; font-weight: 600; color: var(--info); }
+
+    /* Nearby (xung quanh) */
+    .nearby { display: grid; grid-template-columns: 1fr; gap: 22px; }
+    @media (min-width: 768px) { .nearby { grid-template-columns: 1fr 1fr; } }
+    .nearby__h { font-size: 13px; font-weight: 700; color: var(--muted-fg); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 12px; }
+    .nearby__item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+    .nearby__item:last-child { border-bottom: 0; }
+    .nearby__item .n { color: var(--fg); display: flex; align-items: center; gap: 8px; }
+    .nearby__item .n .ic { color: var(--gold); }
+    .nearby__item .d { color: var(--muted-fg); font-size: 13px; white-space: nowrap; }
+
+    /* Contact sidebar */
+    .contact-card { border: 1px solid var(--border); border-radius: var(--radius-l); background: var(--card); padding: 20px; box-shadow: var(--shadow-card); }
+    @media (min-width: 1024px) { .contact-wrap { position: sticky; top: calc(var(--header-h) + 16px); } }
+    .sale { display: flex; align-items: center; gap: 12px; }
+    .sale__av { width: 48px; height: 48px; font-size: 17px; }
+    .sale__name { font-size: 16px; font-weight: 700; color: var(--fg); }
+    .sale__role { font-size: 13px; color: var(--muted-fg); }
+    .sale__stars { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 12px; color: var(--muted-fg); }
+    .sale__stars .stars { display: inline-flex; color: var(--gold); }
+    .contact-card__actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+    .qr { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); text-align: center; }
+    .qr__box { width: 128px; height: 128px; margin: 0 auto 10px; border: 1px solid var(--border); border-radius: var(--radius-m); background: var(--muted); display: flex; align-items: center; justify-content: center; color: var(--muted-fg); }
+    .qr__box svg { width: 64px; height: 64px; }
+    .qr__note { font-size: 13px; color: var(--muted-fg); }
+    .qr__note a { color: var(--info); font-weight: 600; }
+
+    /* Similar */
+    .similar__head { margin-bottom: 20px; }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 60px 20px; }
+    .empty h1 { font-size: 22px; font-weight: 700; color: var(--fg); margin-bottom: 8px; }
+    .empty p { color: var(--muted-fg); }
+  </style>
+</head>
+<body>
+  <div id="ht-header" data-active="search"></div>
+
+  <main id="page">
+    <!-- TOPBAR: breadcrumb + chia sẻ -->
+    <div class="topbar">
+      <div class="container topbar__inner">
+        <nav class="crumb" aria-label="breadcrumb">
+          <a href="index.html">Trang chủ</a> <span>/</span>
+          <a href="timphong.html" id="bcQuan">TP.HCM</a> <span>/</span>
+          <b>Chi tiết phòng</b>
+        </nav>
+        <div class="share">
+          <span>Chia sẻ:</span>
+          <a class="share__btn" id="shareFb" target="_blank" rel="noopener"><span id="shareFbIc"></span> Facebook</a>
+          <a class="share__btn" id="shareZalo" target="_blank" rel="noopener">Zalo</a>
+          <button class="share__btn" id="shareCopy" type="button"><span id="shareCopyIc"></span> Copy link</button>
+        </div>
+      </div>
+    </div>
+
+    <section class="detail">
+      <div class="container detail__grid" id="detailGrid">
+        <!-- Cột trái: nội dung -->
+        <div>
+          <!-- Gallery + video -->
+          <div class="panel">
+            <div class="gallery__main">
+              <span class="gallery__grad" id="galMain"></span>
+              <span class="gallery__count" id="galCount"></span>
+            </div>
+            <div class="gallery__thumbs" id="galThumbs"></div>
+
+            <div class="videobox is-hidden" id="videoBox">
+              <div class="videobox__frame" id="videoFrame"></div>
+              <span class="video-note" id="videoNote"></span>
+            </div>
+          </div>
+
+          <!-- Title card -->
+          <div class="panel">
+            <div class="titlecard__price"><span id="priceVal">…</span></div>
+            <h1 class="titlecard__name" id="title">…</h1>
+            <div class="titlecard__addr"><span class="ic" id="addrIc"></span><span id="addr">…</span></div>
+            <div class="titlecard__actions">
+              <button class="btn btn--ghost" id="btnSave" type="button"></button>
+              <button class="btn btn--ghost" id="btnShare2" type="button"></button>
+            </div>
+          </div>
+
+          <!-- Specs -->
+          <div class="panel">
+            <h2 class="panel__title">Thông tin phòng</h2>
+            <div class="specs" id="specs"></div>
+          </div>
+
+          <!-- Amenities -->
+          <div class="panel">
+            <h2 class="panel__title">Tiện ích &amp; đặc điểm</h2>
+            <div class="amenities" id="amenities"></div>
+          </div>
+
+          <!-- Intro -->
+          <div class="panel">
+            <h2 class="panel__title">Giới thiệu phòng</h2>
+            <div class="intro" id="intro"></div>
+          </div>
+
+          <!-- Cost -->
+          <div class="panel">
+            <h2 class="panel__title">Chi phí hàng tháng</h2>
+            <div class="cost">
+              <div class="cost__item"><div class="cost__lbl">Tiền điện</div><div class="cost__val">4.000đ/kWh</div></div>
+              <div class="cost__item"><div class="cost__lbl">Tiền nước</div><div class="cost__val">150k/người</div></div>
+              <div class="cost__item"><div class="cost__lbl">Gửi xe</div><div class="cost__val">100k/xe</div></div>
+              <div class="cost__item"><div class="cost__lbl">Dịch vụ</div><div class="cost__val">200k/phòng</div></div>
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="panel">
+            <h2 class="panel__title">Vị trí trên bản đồ</h2>
+            <div class="mapbox" id="mapBox"></div>
+            <a class="map-link" id="mapLink" target="_blank" rel="noopener"></a>
+          </div>
+
+          <!-- Nearby -->
+          <div class="panel">
+            <h2 class="panel__title">Xung quanh phòng</h2>
+            <div class="nearby">
+              <div>
+                <div class="nearby__h">Tiện ích xung quanh</div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb1"></span>Siêu thị Emart</span><span class="d">700m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb2"></span>Bệnh viện 175</span><span class="d">2,1km</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb3"></span>Trạm xe buýt</span><span class="d">180m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="nb4"></span>Công viên Gia Định</span><span class="d">1,4km</span></div>
+              </div>
+              <div>
+                <div class="nearby__h">Trường học lân cận</div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc1"></span>ĐH Công nghiệp</span><span class="d">220m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc2"></span>ĐH Văn Lang</span><span class="d">500m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc3"></span>THPT Nguyễn Trãi</span><span class="d">680m</span></div>
+                <div class="nearby__item"><span class="n"><span class="ic" id="sc4"></span>THCS Nguyễn Du</span><span class="d">850m</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: liên hệ (sticky) -->
+        <aside>
+          <div class="contact-wrap">
+            <div class="contact-card">
+              <div class="sale">
+                <span class="avatar sale__av" id="saleAv">M</span>
+                <div>
+                  <div class="sale__name">Minh Trọ · HT HOME</div>
+                  <div class="sale__role">Chuyên viên tư vấn phòng</div>
+                  <div class="sale__stars"><span class="stars" id="saleStars"></span> 4.9 · 42 đánh giá</div>
+                </div>
+              </div>
+              <div class="contact-card__actions">
+                <a class="btn btn--primary btn--block" id="btnChat" target="_blank" rel="noopener"></a>
+                <a class="btn btn--ghost btn--block" id="btnCall"></a>
+                <button class="btn btn--ghost btn--block" id="btnBook" type="button"></button>
+              </div>
+              <div class="qr">
+                <a class="qr__box" id="qrBox" target="_blank" rel="noopener"></a>
+                <div class="qr__note">Quét mã <a id="qrLink" target="_blank" rel="noopener">Zalo QR</a> để chat nhanh với sale</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Phòng tương tự -->
+    <section class="section section--card" id="similarSec">
+      <div class="container">
+        <div class="section__head similar__head">
+          <div>
+            <h2 class="t-heading">Phòng tương tự gần đây</h2>
+            <p class="t-caption" id="similarSub">Cùng khu vực</p>
+          </div>
+          <a class="section__link" href="timphong.html">Xem tất cả</a>
+        </div>
+        <div class="room-grid" id="similar"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="ht-footer"></div>
+
+  <script src="data.js"></script>
+  <script src="assets/js/ht-ui.js?v=4"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      // ---- Icon nội bộ (những icon không có trong ht-ui.js) — inline SVG ----
+      function svg(body, size) {
+        size = size || 16;
+        return '<svg class="ic" width="' + size + '" height="' + size + '" viewBox="0 0 24 24" fill="none" ' +
+          'stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + body + '</svg>';
+      }
+      var IC = {
+        check:   function (s) { return svg('<path d="M20 6 9 17l-5-5"/>', s); },
+        share:   function (s) { return svg('<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/>', s); },
+        copy:    function (s) { return svg('<rect width="14" height="14" x="8" y="8" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>', s); },
+        calendar:function (s) { return svg('<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18M8 2v4M16 2v4"/>', s); },
+        message: function (s) { return svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>', s); },
+        cart:    function (s) { return svg('<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>', s); },
+        hospital:function (s) { return svg('<path d="M12 6v4M14 8h-4"/><path d="M18 22V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v18"/><path d="M4 22h16"/>', s); },
+        bus:     function (s) { return svg('<path d="M8 6v6M15 6v6M2 12h19.6M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>', s); },
+        tree:    function (s) { return svg('<path d="M12 22v-7M9 8a3 3 0 1 1 5.8-1A3 3 0 0 1 17 12a3 3 0 0 1-2 5.2A3 3 0 0 1 9 17a3 3 0 0 1-1-6 3 3 0 0 1 1-3Z"/>', s); },
+        school:  function (s) { return svg('<path d="M14 22v-4a2 2 0 0 0-4 0v4M18 10V6l-6-4-6 4v4M4 22V10l8-5 8 5v12Z"/>', s); },
+        qr:      function (s) { return svg('<rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3M21 21v.01M12 7v3a2 2 0 0 1-2 2H7M3 12h.01M12 3h.01M12 16v.01M16 12h1M21 12v.01M12 21v-1"/>', s); }
+      };
+      function HTicon(name, size) { return window.HT ? window.HT.icon(name, size) : ''; }
+      function esc(s) { return window.HT ? window.HT.esc(s) : String(s == null ? '' : s); }
+
+      // ---- Lấy phòng theo ?i= ----
+      var ROOMS = window.ROOMS || [];
+      var i = parseInt(new URLSearchParams(location.search).get('i') || '0', 10);
+      if (isNaN(i) || i < 0 || i >= ROOMS.length) i = 0;
+      var r = ROOMS[i] || ROOMS[0];
+
+      // ---- Không có phòng nào → thông báo lịch sự ----
+      if (!r) {
+        document.getElementById('page').innerHTML =
+          '<div class="container empty">' +
+            '<h1>Không tìm thấy phòng</h1>' +
+            '<p>Phòng bạn tìm không tồn tại hoặc đã được cho thuê. ' +
+            '<a href="index.html" style="color:var(--info);font-weight:600">Về trang chủ</a> để xem các phòng khác.</p>' +
+          '</div>';
+        return;
+      }
+
+      var catOf = window.catOf ? window.catOf(r) : (r.cat || r.ty || 'Phòng trọ');
+      var tags = (r.tags && r.tags.length) ? r.tags : (window.DEFAULT_TAGS || []);
+      var tagStr = tags.join(' ');
+      function hasTag(re) { return re.test(tagStr); }
+
+      document.title = (r.t || 'Chi tiết phòng') + ' — HT HOME';
+
+      // ---- Breadcrumb ----
+      var quan = r.quan || (r.l || '').split(',')[0].trim() || 'TP.HCM';
+      var bcQuan = document.getElementById('bcQuan');
+      bcQuan.textContent = quan;
+      bcQuan.href = 'timphong.html?quan=' + encodeURIComponent(quan);
+
+      // ---- Chia sẻ ----
+      var pageUrl = location.href;
+      var phone = (r.phone || '0974180000').replace(/[^\d+]/g, '');
+      var zalo = r.zalo || ('https://zalo.me/' + phone);
+      document.getElementById('shareFbIc').innerHTML = HTicon('facebook', 15);
+      document.getElementById('shareCopyIc').innerHTML = IC.copy(15);
+      document.getElementById('shareFb').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(pageUrl);
+      document.getElementById('shareZalo').href = 'https://zalo.me/share/link?u=' + encodeURIComponent(pageUrl);
+      function doCopy(btn) {
+        var done = function () { var t = btn.innerHTML; btn.innerHTML = IC.check(15) + ' Đã copy'; setTimeout(function () { btn.innerHTML = t; }, 1600); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(pageUrl).then(done, done);
+        } else {
+          var ta = document.createElement('textarea'); ta.value = pageUrl; document.body.appendChild(ta);
+          ta.select(); try { document.execCommand('copy'); } catch (e) {} document.body.removeChild(ta); done();
+        }
+      }
+      document.getElementById('shareCopy').addEventListener('click', function () { doCopy(this); });
+
+      // ---- Gallery ----
+      var imgs = (r.imgs && r.imgs.length) ? r.imgs : ['#c8d8ff,#a0b8f0'];
+      function gradOf(v) {
+        if (!v) return 'background:var(--muted)';
+        if (/^(https?:|\/)/i.test(v)) return "background-image:url('" + v + "');background-size:cover;background-position:center";
+        var cols = String(v).split(',').map(function (s) { return s.trim(); });
+        return 'background:' + (cols.length > 1 ? 'linear-gradient(135deg,' + cols.join(',') + ')' : cols[0]);
+      }
+      var galMain = document.getElementById('galMain');
+      galMain.setAttribute('style', gradOf(imgs[0]));
+      document.getElementById('galCount').innerHTML = HTicon('area', 13) + Math.max(imgs.length, 4) + ' ảnh';
+      // 4 thumbnail: lặp lại nếu thiếu
+      var thumbs = [];
+      for (var t = 0; t < 4; t++) thumbs.push(imgs[t % imgs.length]);
+      document.getElementById('galThumbs').innerHTML = thumbs.map(function (v, idx) {
+        return '<div class="gallery__thumb' + (idx === 0 ? ' is-active' : '') + '" data-g="' + esc(v) + '">' +
+          '<span class="grad" style="' + gradOf(v) + '"></span></div>';
+      }).join('');
+      document.getElementById('galThumbs').addEventListener('click', function (e) {
+        var th = e.target.closest('.gallery__thumb'); if (!th) return;
+        galMain.setAttribute('style', gradOf(th.getAttribute('data-g')));
+        this.querySelectorAll('.gallery__thumb').forEach(function (x) { x.classList.remove('is-active'); });
+        th.classList.add('is-active');
+      });
+
+      // ---- Video TikTok ----
+      function tiktokId(url) {
+        var m = (url || '').match(/\/video\/(\d+)/) || (url || '').match(/(\d{15,})/);
+        return m ? m[1] : '';
+      }
+      var vid = tiktokId(r.video);
+      if (r.video && vid) {
+        document.getElementById('videoBox').classList.remove('is-hidden');
+        document.getElementById('videoFrame').innerHTML =
+          '<iframe src="https://www.tiktok.com/embed/v2/' + vid + '" allow="encrypted-media; fullscreen" allowfullscreen scrolling="no"></iframe>';
+        document.getElementById('videoNote').innerHTML = HTicon('play', 14) + ' Video review · TikTok';
+      }
+
+      // ---- Title card ----
+      document.getElementById('priceVal').innerHTML = esc(r.p || 'Liên hệ') + '<span>/tháng</span>';
+      document.getElementById('title').textContent = r.t || '';
+      document.getElementById('addrIc').innerHTML = HTicon('map-pin', 16);
+      document.getElementById('addr').textContent = (r.l || '') + ' · Xem số nhà khi liên hệ';
+      document.getElementById('btnSave').innerHTML = HTicon('heart', 15) + ' Lưu';
+      document.getElementById('btnShare2').innerHTML = IC.share(15) + ' Chia sẻ';
+      document.getElementById('btnSave').addEventListener('click', function () {
+        this.classList.toggle('text-gold');
+      });
+      document.getElementById('btnShare2').addEventListener('click', function () {
+        document.getElementById('shareCopy').click();
+      });
+
+      // ---- Specs (suy từ tags) ----
+      var beds = hasTag(/(\d)\s*PN/i) ? (tagStr.match(/(\d)\s*PN/i)[1] + ' PN')
+        : hasTag(/studio/i) ? 'Studio'
+        : hasTag(/duplex/i) ? 'Duplex'
+        : hasTag(/penthouse/i) ? 'Penthouse'
+        : '1 PN';
+      var noithat = hasTag(/(Full|Đầy đủ|Cao cấp)/i) ? 'Full'
+        : hasTag(/(Cơ bản|Máy lạnh|Giường|Bàn ghế|Tủ)/i) ? 'Cơ bản'
+        : 'Cơ bản';
+      var design = hasTag(/duplex/i) ? 'Duplex'
+        : hasTag(/penthouse/i) ? 'Penthouse'
+        : hasTag(/studio/i) ? 'Studio'
+        : hasTag(/gác/i) ? 'Gác lửng'
+        : 'Tiêu chuẩn';
+      var specs = [
+        ['area', 'Diện tích', r.a || '20m²'],
+        ['bed', 'Phòng ngủ', beds],
+        ['building', 'Nội thất', noithat],
+        ['bath', 'WC', 'Riêng'],
+        ['layout-grid', 'Thiết kế', design]
+      ];
+      document.getElementById('specs').innerHTML = specs.map(function (s) {
+        return '<div class="spec"><span class="spec__ic">' + HTicon(s[0], 18) + '</span>' +
+          '<span class="spec__lbl">' + s[1] + '</span><span class="spec__val">' + esc(s[2]) + '</span></div>';
+      }).join('');
+
+      // ---- Amenities ----
+      var amen = tags.slice();
+      if (!amen.length) amen = ['Wifi', 'Chỗ để xe', 'Camera 24/7', 'Máy giặt chung', 'Giờ giấc tự do', 'An ninh 24/7'];
+      // loại trùng
+      amen = amen.filter(function (v, k, a) { return a.indexOf(v) === k; });
+      document.getElementById('amenities').innerHTML = amen.map(function (a) {
+        return '<div class="amenity"><span class="chk">' + IC.check(13) + '</span><span>' + esc(a) + '</span></div>';
+      }).join('');
+
+      // ---- Intro ----
+      document.getElementById('intro').innerHTML =
+        '<p>Phòng <b>' + esc(catOf) + '</b> tại <b>' + esc(quan) + '</b>, diện tích ' + esc(r.a || '20m²') +
+        ', thiết kế thoáng đãng, phù hợp cho người đi làm và sinh viên. Khu vực an ninh, có camera và bảo vệ, thuận tiện di chuyển đến trung tâm.</p>' +
+        '<p>Nội thất ' + noithat.toLowerCase() + ', sẵn sàng dọn vào ở ngay. Gần chợ, siêu thị, trường học và bệnh viện. ' +
+        'Giá thuê ' + esc(r.p || 'liên hệ') + '/tháng, cọc 1 tháng, hợp đồng tối thiểu 3 tháng. Liên hệ sale để xem phòng và nhận số nhà chính xác.</p>';
+
+      // ---- Map ----
+      var mapQ = r.l || (quan + ', TP.HCM');
+      document.getElementById('mapBox').innerHTML =
+        '<iframe src="https://maps.google.com/maps?q=' + encodeURIComponent(mapQ) + '&z=15&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>';
+      var mapLink = document.getElementById('mapLink');
+      mapLink.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(mapQ);
+      mapLink.innerHTML = HTicon('map-pin', 14) + ' Xem bản đồ lớn hơn';
+
+      // ---- Icon cho khối xung quanh ----
+      document.getElementById('nb1').innerHTML = IC.cart(15);
+      document.getElementById('nb2').innerHTML = IC.hospital(15);
+      document.getElementById('nb3').innerHTML = IC.bus(15);
+      document.getElementById('nb4').innerHTML = IC.tree(15);
+      document.getElementById('sc1').innerHTML = HTicon('graduation-cap', 15);
+      document.getElementById('sc2').innerHTML = HTicon('graduation-cap', 15);
+      document.getElementById('sc3').innerHTML = IC.school(15);
+      document.getElementById('sc4').innerHTML = IC.school(15);
+
+      // ---- Contact card ----
+      var initial = (r.t || 'M').trim().charAt(0).toUpperCase() || 'M';
+      document.getElementById('saleAv').textContent = initial;
+      document.getElementById('saleStars').innerHTML = Array(5).fill(HTicon('star', 12)).join('');
+      var btnChat = document.getElementById('btnChat');
+      btnChat.href = zalo;
+      btnChat.innerHTML = IC.message(16) + ' Chat với sale ngay';
+      var btnCall = document.getElementById('btnCall');
+      btnCall.href = 'tel:' + phone;
+      btnCall.innerHTML = HTicon('phone', 16) + ' Gọi ngay: ' + esc(r.phone || phone);
+      document.getElementById('btnBook').innerHTML = IC.calendar(16) + ' Đặt lịch xem phòng';
+      document.getElementById('btnBook').addEventListener('click', function () {
+        window.open(zalo, '_blank', 'noopener');
+      });
+      var qrBox = document.getElementById('qrBox');
+      qrBox.href = zalo;
+      qrBox.innerHTML = IC.qr(64);
+      document.getElementById('qrLink').href = zalo;
+
+      // ---- Phòng tương tự ----
+      function shortType(cat) { return { 'Căn hộ dịch vụ': 'CHDV', 'Ký túc xá': 'KTX' }[cat] || cat; }
+      function toCard(x, idx) {
+        return {
+          href: 'detail.html?i=' + idx,
+          img: (x.imgs && x.imgs[0]) || '',
+          price: x.p,
+          type: shortType(window.catOf ? window.catOf(x) : (x.cat || x.ty)),
+          title: x.t,
+          addr: x.quan ? (x.quan + ', TP.HCM') : (x.l || ''),
+          area: x.a,
+          beds: '',
+          status: 'Còn trống', statusKey: 'success',
+          video: !!x.video
+        };
+      }
+      var pool = ROOMS.map(function (x, k) { return { x: x, k: k }; }).filter(function (o) { return o.k !== i; });
+      var same = pool.filter(function (o) { return (o.x.quan || '') === quan; });
+      var list = same.length >= 4 ? same : same.concat(pool.filter(function (o) { return same.indexOf(o) < 0; }));
+      list = list.slice(0, 4);
+      document.getElementById('similarSub').textContent = same.length ? ('Cùng khu vực ' + quan) : 'Gợi ý cho bạn';
+      var similarEl = document.getElementById('similar');
+      if (list.length && window.HT && window.HT.roomCard) {
+        similarEl.innerHTML = list.map(function (o) { return window.HT.roomCard(toCard(o.x, o.k)); }).join('');
+        // favorite toggle
+        similarEl.addEventListener('click', function (e) {
+          var f = e.target.closest('.room-card__fav');
+          if (f) { e.preventDefault(); f.classList.toggle('is-active'); }
+        });
+      } else {
+        document.getElementById('similarSec').classList.add('is-hidden');
+      }
+    })();
+  </script>
+</body>
+</html>

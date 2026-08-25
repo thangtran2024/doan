@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bảng tin nội bộ — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
+  <link rel="stylesheet" href="assets/css/base.css?v=4" />
+  <link rel="stylesheet" href="assets/css/components.css?v=4" />
+  <link rel="stylesheet" href="assets/css/internal.css?v=4" />
+  <style>
+    .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 18px; -webkit-overflow-scrolling: touch; }
+    .filters::-webkit-scrollbar { height: 0; }
+    .chip { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all .15s; }
+    .chip:hover { color: var(--fg); border-color: var(--muted-fg); }
+    .chip.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+
+    .feed { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+
+    .post { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); padding: 18px 20px; }
+    .post.is-pinned { border-color: var(--gold); }
+    .post__head { display: flex; align-items: center; gap: 12px; }
+    .post__author { font-size: 14px; font-weight: 700; color: var(--fg); line-height: 1.2; }
+    .post__meta { font-size: 12px; color: var(--muted-fg); margin-top: 2px; }
+    .post__pin { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--gold-fg); background: var(--gold-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+
+    .post__tag { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 3px 10px; margin: 14px 0 8px; }
+    .tag--report { background: var(--info-soft); color: var(--info); }
+    .tag--congrat { background: var(--success-soft); color: var(--success); }
+    .tag--system { background: var(--warning-soft); color: var(--warning); }
+    .tag--meeting { background: var(--gold-soft); color: var(--gold-fg); }
+    .tag--announce { background: var(--danger-soft); color: var(--danger); }
+
+    .post__title { font-size: 16px; font-weight: 700; color: var(--fg); margin-bottom: 6px; }
+    .post__body { font-size: 14px; color: var(--fg); line-height: 1.55; }
+    .post__foot { display: flex; align-items: center; gap: 16px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--muted-fg); }
+    .post__foot span { display: inline-flex; align-items: center; gap: 5px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="bangtin"></div>
+    <main class="app-main">
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Bảng tin nội bộ</div>
+            <div class="app-topbar__sub">Thông báo, meeting notes, cập nhật hệ thống cho toàn team</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <button class="btn btn--primary btn--sm" id="btnPost"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- Chip lọc -->
+        <div class="filters" id="filters"></div>
+
+        <!-- Feed -->
+        <div class="feed" id="feed"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script>
+    var I = HTI.icon;
+    document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+    document.getElementById('btnPost').innerHTML = I('plus', 16) + 'Đăng thông báo';
+
+    /* ---- Bảng loại: gắn tag <-> chip <-> select ---- */
+    var TYPES = {
+      announce: { chip: '📢 Thông báo', cls: 'tag--announce' },
+      congrat:  { chip: '🎉 Chúc mừng', cls: 'tag--congrat' },
+      meeting:  { chip: '📅 Meeting', cls: 'tag--meeting' },
+      system:   { chip: '🔧 Cập nhật hệ thống', cls: 'tag--system' },
+      report:   { chip: '📊 Báo cáo tháng', cls: 'tag--report' }
+    };
+
+    /* ---- Chip lọc ---- */
+    var filters = [
+      { t: 'Tất cả', active: true }, { t: '📢 Thông báo' }, { t: '🎉 Chúc mừng' },
+      { t: '📅 Meeting' }, { t: '🔧 Cập nhật hệ thống' }, { t: '📊 Báo cáo tháng' }
+    ];
+    var elF = document.getElementById('filters');
+    elF.innerHTML = filters.map(function (f) {
+      return '<button class="chip' + (f.active ? ' is-active' : '') + '">' + f.t + '</button>';
+    }).join('');
+    elF.addEventListener('click', function (e) {
+      var c = e.target.closest('.chip');
+      if (!c) return;
+      elF.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('is-active'); });
+      c.classList.add('is-active');
+      var sel = c.textContent.trim();
+      document.querySelectorAll('#feed .post').forEach(function (p) {
+        p.style.display = (sel === 'Tất cả' || p.getAttribute('data-type') === sel) ? '' : 'none';
+      });
+    });
+
+    /* ---- Feed ---- */
+    var posts = [];
+
+    var feedEl = document.getElementById('feed');
+    // Suy ra nhãn chip từ tagCls (để lọc)
+    function chipByCls(cls) {
+      for (var k in TYPES) { if (TYPES[k].cls === cls) return TYPES[k].chip; }
+      return 'Tất cả';
+    }
+    var E = HT.esc;
+    function renderPost(p) {
+      return '<article class="post' + (p.pinned ? ' is-pinned' : '') + '" data-type="' + E(chipByCls(p.tagCls)) + '">' +
+        '<div class="post__head">' +
+          '<span class="avatar">' + E(p.av) + '</span>' +
+          '<span><span class="post__author" style="display:block">' + E(p.author) + '</span>' +
+          '<span class="post__meta">' + E(p.role) + ' · ' + E(p.time) + '</span></span>' +
+          (p.pinned ? '<span class="post__pin">📌 Ghim</span>' : '') +
+        '</div>' +
+        '<span class="post__tag ' + p.tagCls + '">' + E(p.tagTxt) + '</span>' +
+        '<div class="post__title">' + E(p.title) + '</div>' +
+        '<div class="post__body">' + E(p.body) + '</div>' +
+        '<div class="post__foot">' +
+          '<span class="post__like" style="cursor:pointer">♥ <b>' + p.like + '</b> like</span>' +
+          '<span class="post__cmt" style="cursor:pointer">💬 <b>' + p.cmt + '</b> bình luận</span>' +
+          '<span class="post__del" data-del="' + p.id + '" title="Xoá bài" style="cursor:pointer;color:var(--danger);margin-left:auto">🗑 Xoá</span>' +
+        '</div>' +
+      '</article>';
+    }
+    function renderFeed() { feedEl.innerHTML = posts.map(renderPost).join(''); }
+    function loadPosts() {
+      fetch('/api/bang-tin').then(function (r) { return r.json(); }).then(function (rows) {
+        posts = Array.isArray(rows) ? rows : [];
+        renderFeed();
+      }).catch(function () { HT.toast('Không tải được bảng tin', 'danger'); });
+    }
+    loadPosts();
+
+    // Like / bình luận: tăng số đếm demo khi bấm
+    feedEl.addEventListener('click', function (e) {
+      var del = e.target.closest ? e.target.closest('.post__del') : null;
+      if (del) {
+        var id = del.getAttribute('data-del');
+        HT.confirm({
+          title: 'Xoá bài', message: 'Xoá bài này khỏi bảng tin?', danger: true, confirmLabel: 'Xoá',
+          onConfirm: function () {
+            fetch('/api/bang-tin', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: id }) })
+              .then(function (r) { return r.json(); })
+              .then(function (res) { if (res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã xoá bài', 'success'); loadPosts(); })
+              .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+          }
+        });
+        return;
+      }
+      var s = e.target.closest('.post__like, .post__cmt');
+      if (!s) return;
+      var b = s.querySelector('b');
+      if (b) b.textContent = (parseInt(b.textContent, 10) || 0) + 1;
+    });
+
+    // Đăng thông báo
+    document.getElementById('btnPost').addEventListener('click', function () {
+      var opts = Object.keys(TYPES).map(function (k) {
+        return '<option value="' + k + '">' + TYPES[k].chip + '</option>';
+      }).join('');
+      var body =
+        '<div class="mfield"><label class="mfield__label">Loại</label>' +
+          '<select id="pLoai">' + opts + '</select></div>' +
+        '<div class="mfield"><label class="mfield__label">Tiêu đề</label>' +
+          '<input id="pTitle" type="text" placeholder="Tiêu đề thông báo"/></div>' +
+        '<div class="mfield"><label class="mfield__label">Nội dung</label>' +
+          '<textarea id="pBody" rows="4" placeholder="Nội dung chi tiết..."></textarea></div>' +
+        '<div class="mfield"><label class="mfield__label"><input id="pPin" type="checkbox" style="width:auto;margin-right:8px"/>Ghim bài này</label></div>';
+      HT.modal({
+        title: 'Đăng thông báo', sub: 'Bài viết sẽ hiện lên đầu bảng tin',
+        submitLabel: 'Đăng', bodyHTML: body,
+        onSubmit: function (m, close) {
+          var k = m.querySelector('#pLoai').value;
+          var title = m.querySelector('#pTitle').value.trim();
+          var content = m.querySelector('#pBody').value.trim();
+          var pin = m.querySelector('#pPin').checked;
+          if (!title) { HT.toast('Nhập tiêu đề', 'danger'); return false; }
+          if (!content) { HT.toast('Nhập nội dung', 'danger'); return false; }
+          fetch('/api/bang-tin', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              av: 'B', author: 'Bạn', role: 'Sale',
+              tagCls: TYPES[k].cls, tagTxt: TYPES[k].chip,
+              title: title, body: content, pinned: pin
+            })
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            if (res.error) { HT.toast(res.error, 'danger'); return; }
+            close();
+            HT.toast('Đã đăng', 'success');
+            loadPosts();
+          }).catch(function () { HT.toast('Lỗi mạng, chưa đăng được', 'danger'); });
+          return false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quản lý nhân viên — HT HOME Nội bộ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/tokens.css?v=4" />
+  <link rel="stylesheet" href="assets/css/base.css?v=4" />
+  <link rel="stylesheet" href="assets/css/components.css?v=4" />
+  <link rel="stylesheet" href="assets/css/internal.css?v=4" />
+  <style>
+    /* Ô tìm trên topbar */
+    .nv-search { display: inline-flex; align-items: center; gap: 8px; background: var(--muted); border: 1px solid var(--border); border-radius: var(--radius-m); padding: 8px 12px; color: var(--muted-fg); }
+    .nv-search input { border: 0; background: transparent; outline: none; font-family: inherit; font-size: 13.5px; color: var(--fg); width: 150px; }
+    .nv-search input::placeholder { color: var(--muted-fg); }
+
+    /* KPI */
+    .kpi-row { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    @media (min-width: 560px) { .kpi-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1200px) { .kpi-row { grid-template-columns: repeat(4, 1fr); } }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); padding: 18px; box-shadow: var(--shadow-card); }
+    .kpi__top { display: flex; align-items: center; justify-content: space-between; color: var(--muted-fg); font-size: 13px; font-weight: 500; }
+    .kpi__ic { width: 34px; height: 34px; border-radius: var(--radius-s); background: var(--gold-soft); color: var(--gold); display: inline-flex; align-items: center; justify-content: center; }
+    .kpi__val { font-size: 26px; font-weight: 800; color: var(--fg); margin-top: 10px; }
+    .kpi__delta { font-size: 12px; margin-top: 4px; color: var(--muted-fg); }
+
+    /* Tabs lọc */
+    .tabs { display: flex; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 2px; margin-top: 20px; }
+    .tab { flex-shrink: 0; border: 1px solid var(--border); background: var(--card); color: var(--muted-fg); font-family: inherit; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+    .tab.is-active { background: var(--fg); color: var(--card); border-color: var(--fg); }
+
+    /* Card + bảng */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-l); box-shadow: var(--shadow-card); margin-top: 16px; }
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.nv { width: 100%; border-collapse: collapse; min-width: 820px; }
+    table.nv th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted-fg); padding: 12px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    table.nv td { font-size: 13.5px; color: var(--fg); padding: 13px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; vertical-align: middle; }
+    table.nv tr:last-child td { border-bottom: 0; }
+    .nv-emp { display: flex; align-items: center; gap: 11px; }
+    .nv-emp__name { font-weight: 600; display: block; }
+    .nv-emp__email { font-size: 12px; color: var(--muted-fg); }
+    .nv-num { font-weight: 700; }
+    .nv-more { border: 0; background: transparent; color: var(--muted-fg); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: var(--radius-s); }
+    .nv-more:hover { background: var(--muted); color: var(--fg); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-sidebar" id="ht-sidebar" data-active="nhanvien"></div>
+    <main class="app-main">
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-sidebar" id="btnSidebar" aria-label="Menu"></button>
+          <div>
+            <div class="app-topbar__title">Quản lý nhân viên</div>
+            <div class="app-topbar__sub">Danh sách &amp; hiệu suất đội sale</div>
+          </div>
+        </div>
+        <div class="app-topbar__actions">
+          <span class="nv-search"><span id="nvSearchIc"></span><input type="text" placeholder="Tìm nhân viên..." id="nvSearch" /></span>
+          <button class="btn btn--primary btn--sm" id="btnAdd" type="button"></button>
+        </div>
+      </header>
+
+      <div class="app-content">
+        <!-- KPI -->
+        <div class="kpi-row" id="kpiRow"></div>
+
+        <!-- Tabs lọc -->
+        <div class="tabs" id="tabs"></div>
+
+        <!-- Bảng nhân viên -->
+        <section class="card">
+          <div class="table-wrap">
+            <table class="nv">
+              <thead>
+                <tr>
+                  <th>Nhân viên</th><th>Vai trò</th><th>Khu vực</th>
+                  <th>Deal Th7</th><th>HH Th7</th><th>Trạng thái</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="nvRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/js/ht-ui.js?v=4"></script>
+  <script src="assets/js/ht-internal.js?v=4"></script>
+  <script>
+    (function () {
+      'use strict';
+      var I = HTI.icon;
+      var esc = (window.HT && HT.esc) ? HT.esc : function (s) { return String(s == null ? '' : s); };
+      document.getElementById('btnSidebar').innerHTML = I('menu', 22);
+      document.getElementById('nvSearchIc').innerHTML = I('search', 16);
+      document.getElementById('btnAdd').innerHTML = I('plus', 16) + 'Thêm nhân viên';
+
+      // Dữ liệu nhân viên — tải THẬT từ D1 qua API (đã seed đủ 14 người, mỗi bản ghi có thêm field id)
+      var emps = [];
+
+      // Tải danh sách nhân viên từ D1 rồi render lại toàn bộ (KPI + tab lọc + danh sách)
+      function loadEmps() {
+        fetch('/api/nhan-vien').then(function (r) { return r.json(); }).then(function (rows) {
+          emps = Array.isArray(rows) ? rows : [];
+          refreshAll();
+        }).catch(function () {
+          HT.toast('Không tải được nhân viên', 'danger');
+        });
+      }
+
+      var ROLES = ['Sale cấp 2', 'Sale cấp 1', 'Manager', 'Admin'];
+      var state = { search: '', tab: 'all' };
+
+      // KPI
+      function kpiData() {
+        var total = emps.length;
+        var active = emps.filter(function (e) { return e.st === 'Active'; }).length;
+        var sale2 = emps.filter(function (e) { return e.role === 'Sale cấp 2'; }).length;
+        var totalDeal = emps.reduce(function (s, e) { return s + (Number(e.deal) || 0); }, 0);
+        return [
+          { label: 'Tổng nhân viên', ic: 'users', val: total, delta: 'Toàn hệ thống' },
+          { label: 'Active tháng này', ic: 'user-cog', val: active, delta: (total - active) + ' đang tạm nghỉ' },
+          { label: 'Sale cấp 2', ic: 'shield-check', val: sale2, delta: 'Nhóm chủ lực' },
+          { label: 'Deal tháng 7', ic: 'file-text', val: totalDeal, delta: 'Toàn đội sale' }
+        ];
+      }
+      function renderKpi() {
+        document.getElementById('kpiRow').innerHTML = kpiData().map(function (k) {
+          return '<div class="kpi"><div class="kpi__top"><span>' + k.label + '</span><span class="kpi__ic">' + I(k.ic, 18) + '</span></div>' +
+            '<div class="kpi__val">' + k.val + '</div><div class="kpi__delta">' + k.delta + '</div></div>';
+        }).join('');
+      }
+
+      // Tabs lọc — số đếm tính động
+      function tabDefs() {
+        function cnt(fn) { return emps.filter(fn).length; }
+        return [
+          { key: 'all', label: 'Tất cả (' + emps.length + ')' },
+          { key: 'Sale cấp 2', label: 'Sale cấp 2 (' + cnt(function (e) { return e.role === 'Sale cấp 2'; }) + ')' },
+          { key: 'Sale cấp 1', label: 'Sale cấp 1 (' + cnt(function (e) { return e.role === 'Sale cấp 1'; }) + ')' },
+          { key: 'Manager', label: 'Manager (' + cnt(function (e) { return e.role === 'Manager'; }) + ')' },
+          { key: 'Admin', label: 'Admin (' + cnt(function (e) { return e.role === 'Admin'; }) + ')' },
+          { key: 'Đã nghỉ', label: 'Đã nghỉ (' + cnt(function (e) { return e.st === 'Đã nghỉ'; }) + ')' }
+        ];
+      }
+      function renderTabs() {
+        var defs = tabDefs();
+        document.getElementById('tabs').innerHTML = defs.map(function (t) {
+          return '<button class="tab' + (t.key === state.tab ? ' is-active' : '') + '" type="button" data-key="' + esc(t.key) + '">' + t.label + '</button>';
+        }).join('');
+        document.querySelectorAll('.tab').forEach(function (b) {
+          b.addEventListener('click', function () {
+            state.tab = b.getAttribute('data-key');
+            renderTabs();
+            renderRows();
+          });
+        });
+      }
+
+      // Vai trò → màu badge
+      function roleBadge(role) {
+        var map = { 'Sale cấp 2': 'gold', 'Sale cấp 1': 'primary', 'Manager': 'success', 'Admin': 'danger' };
+        var c = map[role] || 'muted';
+        var bg = 'var(--' + c + '-soft)', fg = 'var(--' + c + ')';
+        return '<span class="badge" style="background:' + bg + ';color:' + fg + '"><span class="badge__dot" style="background:' + fg + '"></span>' + esc(role) + '</span>';
+      }
+      function statusBadge(st) {
+        if (st === 'Active') {
+          return '<span class="badge badge--success"><span class="badge__dot"></span>Active</span>';
+        }
+        return '<span class="badge" style="background:var(--muted);color:var(--muted-fg)"><span class="badge__dot" style="background:var(--muted-fg)"></span>' + esc(st) + '</span>';
+      }
+
+      // Lọc theo tab + ô tìm kiếm
+      function matchTab(e) {
+        if (state.tab === 'all') return true;
+        if (state.tab === 'Đã nghỉ') return e.st === 'Đã nghỉ';
+        return e.role === state.tab;
+      }
+      function matchSearch(e) {
+        var kw = state.search.trim().toLowerCase();
+        if (!kw) return true;
+        return ((e.name || '') + ' ' + (e.email || '') + ' ' + (e.kv || '')).toLowerCase().indexOf(kw) >= 0;
+      }
+
+      function renderRows() {
+        var rows = emps.filter(function (e) { return matchTab(e) && matchSearch(e); });
+        var tbody = document.getElementById('nvRows');
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted-fg);padding:28px">Không tìm thấy nhân viên phù hợp.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rows.map(function (e) {
+          return '<tr data-email="' + esc(e.email) + '">' +
+            '<td><div class="nv-emp"><span class="avatar">' + esc(e.av) + '</span>' +
+              '<span><span class="nv-emp__name">' + esc(e.name) + '</span>' +
+              '<span class="nv-emp__email">' + esc(e.email) + '</span></span></div></td>' +
+            '<td>' + roleBadge(e.role) + '</td>' +
+            '<td>' + esc(e.kv) + '</td>' +
+            '<td class="nv-num">' + esc(e.deal) + '</td>' +
+            '<td class="nv-num">' + esc(e.hh) + '</td>' +
+            '<td>' + statusBadge(e.st) + '</td>' +
+            '<td style="text-align:right"><button class="nv-more" type="button" aria-label="Tùy chọn" data-email="' + esc(e.email) + '">⋮</button></td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      function refreshAll() { renderKpi(); renderTabs(); renderRows(); }
+
+      // Sinh chữ viết tắt avatar từ tên
+      function initials(name) {
+        var parts = String(name || '').trim().split(/\s+/);
+        if (!parts[0]) return '?';
+        var last = parts[parts.length - 1];
+        var first = parts.length > 1 ? parts[parts.length - 2] : '';
+        return (first.charAt(0) + last.charAt(0)).toUpperCase() || last.charAt(0).toUpperCase();
+      }
+      function findEmp(email) {
+        for (var i = 0; i < emps.length; i++) { if (emps[i].email === email) return emps[i]; }
+        return null;
+      }
+
+      // Ô tìm kiếm lọc thật
+      document.getElementById('nvSearch').addEventListener('input', function () {
+        state.search = this.value;
+        renderRows();
+      });
+
+      // Nút Thêm nhân viên → modal form
+      function roleOptions(sel) {
+        return ROLES.map(function (r) {
+          return '<option value="' + esc(r) + '"' + (r === sel ? ' selected' : '') + '>' + esc(r) + '</option>';
+        }).join('');
+      }
+      document.getElementById('btnAdd').addEventListener('click', function () {
+        if (!window.HT || !HT.modal) { return; }
+        HT.modal({
+          title: 'Thêm nhân viên', sub: 'Nhập thông tin nhân viên mới', submitLabel: 'Thêm',
+          bodyHTML:
+            '<div class="mfield"><label class="mfield__label">Họ tên</label><input id="fName" type="text" placeholder="VD: Nguyễn Văn A" autocomplete="off"></div>' +
+            '<div class="mfield"><label class="mfield__label">Email</label><input id="fEmail" type="email" placeholder="ten@hthome.vn" autocomplete="off"></div>' +
+            '<div class="mrow">' +
+              '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="fRole">' + roleOptions('Sale cấp 2') + '</select></div>' +
+              '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="fKv" type="text" placeholder="VD: Gò Vấp" autocomplete="off"></div>' +
+            '</div>',
+          onSubmit: function (el, close) {
+            var name = el.querySelector('#fName').value.trim();
+            var email = el.querySelector('#fEmail').value.trim();
+            var role = el.querySelector('#fRole').value;
+            var kv = el.querySelector('#fKv').value.trim();
+            if (!name) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
+            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { HT.toast('Email không hợp lệ', 'danger'); return false; }
+            if (findEmp(email)) { HT.toast('Email đã tồn tại', 'danger'); return false; }
+            if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
+            fetch('/api/nhan-vien', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ av: initials(name), name: name, email: email, role: role, kv: kv })
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              if (res.error) { HT.toast(res.error, 'danger'); return; }
+              close();
+              HT.toast('Đã thêm nhân viên', 'success');
+              loadEmps();
+            }).catch(function () {
+              HT.toast('Lỗi mạng, chưa lưu được', 'danger');
+            });
+            return false;
+          }
+        });
+      });
+
+      // ⋮ mỗi dòng → Xem / Sửa / Vô hiệu hoá
+      document.getElementById('nvRows').addEventListener('click', function (ev) {
+        var btn = ev.target.closest ? ev.target.closest('.nv-more') : null;
+        if (!btn) return;
+        var e = findEmp(btn.getAttribute('data-email'));
+        if (!e || !window.HT || !HT.modal) return;
+        HT.modal({
+          title: e.name, sub: e.role + ' · ' + e.kv, submitLabel: null,
+          bodyHTML:
+            '<div style="display:flex;flex-direction:column;gap:8px">' +
+              '<button class="btn btn--ghost" data-act="view" type="button" style="justify-content:flex-start">Xem hồ sơ</button>' +
+              '<button class="btn btn--ghost" data-act="edit" type="button" style="justify-content:flex-start">Sửa thông tin</button>' +
+              (e.st === 'Active'
+                ? '<button class="btn btn--ghost" data-act="off" type="button" style="justify-content:flex-start;color:var(--danger)">Vô hiệu hoá</button>'
+                : '<button class="btn btn--ghost" data-act="on" type="button" style="justify-content:flex-start;color:var(--success)">Kích hoạt lại</button>') +
+              '<button class="btn btn--ghost" data-act="del" type="button" style="justify-content:flex-start;color:var(--danger)">Xoá</button>' +
+            '</div>',
+          onSubmit: null
+        });
+        // Gắn hành động sau khi modal render (dùng backdrop mới nhất)
+        var backdrops = document.querySelectorAll('.modal-backdrop');
+        var md = backdrops[backdrops.length - 1];
+        if (!md) return;
+        var closeBtn = md.querySelector('.modal__close');
+        function closeMd() { if (closeBtn) closeBtn.click(); }
+        md.addEventListener('click', function (ex) {
+          var a = ex.target.closest ? ex.target.closest('[data-act]') : null;
+          if (!a) return;
+          var act = a.getAttribute('data-act');
+          if (act === 'view') {
+            closeMd();
+            HT.modal({
+              title: 'Hồ sơ nhân viên', sub: e.name, submitLabel: null,
+              bodyHTML:
+                '<div class="mfield"><label class="mfield__label">Email</label><div>' + esc(e.email) + '</div></div>' +
+                '<div class="mrow"><div class="mfield"><label class="mfield__label">Vai trò</label><div>' + esc(e.role) + '</div></div>' +
+                '<div class="mfield"><label class="mfield__label">Khu vực</label><div>' + esc(e.kv) + '</div></div></div>' +
+                '<div class="mrow"><div class="mfield"><label class="mfield__label">Deal Th7</label><div>' + esc(e.deal) + '</div></div>' +
+                '<div class="mfield"><label class="mfield__label">Hoa hồng Th7</label><div>' + esc(e.hh) + '</div></div></div>' +
+                '<div class="mfield"><label class="mfield__label">Trạng thái</label><div>' + esc(e.st) + '</div></div>'
+            });
+          } else if (act === 'edit') {
+            closeMd();
+            HT.modal({
+              title: 'Sửa thông tin', sub: e.name, submitLabel: 'Lưu',
+              bodyHTML:
+                '<div class="mfield"><label class="mfield__label">Họ tên</label><input id="eName" type="text" value="' + esc(e.name) + '"></div>' +
+                '<div class="mrow">' +
+                  '<div class="mfield"><label class="mfield__label">Vai trò</label><select id="eRole">' + roleOptions(e.role) + '</select></div>' +
+                  '<div class="mfield"><label class="mfield__label">Khu vực</label><input id="eKv" type="text" value="' + esc(e.kv) + '"></div>' +
+                '</div>',
+              onSubmit: function (elx) {
+                var nm = elx.querySelector('#eName').value.trim();
+                var kv = elx.querySelector('#eKv').value.trim();
+                if (!nm) { HT.toast('Vui lòng nhập họ tên', 'danger'); return false; }
+                if (!kv) { HT.toast('Vui lòng nhập khu vực', 'danger'); return false; }
+                e.name = nm; e.av = initials(nm); e.role = elx.querySelector('#eRole').value; e.kv = kv;
+                refreshAll();
+                HT.toast('Đã cập nhật nhân viên', 'success');
+                fetch('/api/nhan-vien', {
+                  method: 'PATCH', headers: { 'content-type': 'application/json' },
+                  body: JSON.stringify({ id: e.id, name: e.name, av: e.av, role: e.role, kv: e.kv })
+                }).catch(function () { HT.toast('Lỗi lưu, thử lại', 'danger'); });
+                return true;
+              }
+            });
+          } else if (act === 'off') {
+            closeMd();
+            HT.confirm({
+              title: 'Vô hiệu hoá nhân viên', message: 'Đặt "' + e.name + '" sang trạng thái Đã nghỉ?', danger: true,
+              confirmLabel: 'Vô hiệu hoá',
+              onConfirm: function () {
+                e.st = 'Đã nghỉ';
+                refreshAll();
+                HT.toast('Đã vô hiệu hoá nhân viên', 'warning');
+                fetch('/api/nhan-vien', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id, st: e.st }) }).catch(function () {});
+              }
+            });
+          } else if (act === 'on') {
+            closeMd();
+            e.st = 'Active'; refreshAll(); HT.toast('Đã kích hoạt lại nhân viên', 'success');
+            fetch('/api/nhan-vien', { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id, st: e.st }) }).catch(function () {});
+          } else if (act === 'del') {
+            closeMd();
+            HT.confirm({
+              title: 'Xoá nhân viên', message: 'Xoá hẳn "' + e.name + '"? Không khôi phục được.', danger: true, confirmLabel: 'Xoá',
+              onConfirm: function () {
+                fetch('/api/nhan-vien', { method: 'DELETE', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: e.id }) })
+                  .then(function (r) { return r.json(); })
+                  .then(function (res) { if (res.error) { HT.toast(res.error, 'danger'); return; } HT.toast('Đã xoá nhân viên', 'success'); loadEmps(); })
+                  .catch(function () { HT.toast('Lỗi mạng', 'danger'); });
+              }
+            });
+          }
+        });
+      });
+
+      loadEmps();
+    })();
+  </script>
+</body>
+</html>
